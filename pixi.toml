@@ -1,0 +1,68 @@
+[workspace]
+name = "indiana-jones-and-the-great-circle-headtracking"
+version = "0.0.0"
+description = "Head tracking mod for Indiana Jones and the Great Circle"
+authors = ["itsloopyo"]
+license = "MIT"
+license-file = "LICENSE"
+channels = ["conda-forge"]
+platforms = ["win-64"]
+
+[tasks]
+sync = "git submodule update --remote cameraunlock-core"
+
+# No -G: let CMake auto-detect the installed Visual Studio generator. Pinning
+# "Visual Studio 17 2022" broke on CI once the windows runner image moved to
+# VS 2026 (VS 17 absent); auto-detect picks whatever VS the machine has.
+setup = "cmake -S . -B build -A x64"
+build = { cmd = "cmake --build build --config Release", depends-on = ["setup"] }
+
+# The installer ZIP from the build output. No Nexus ZIP: the payload has to sit
+# beside TheGreatCircle.exe, which no mod manager deploys into - see the notes
+# at the top of scripts/package-release.ps1.
+package = { cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/package-release.ps1", depends-on = ["build"] }
+
+# Build + deploy into every detected game install (the dev loop).
+install = { cmd = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/deploy.ps1", depends-on = ["build"] }
+# /y is non-interactive: the uninstall body ends in a `pause` otherwise, so the
+# task sits waiting on stdin until whatever is driving it times out. It does NOT
+# mean "remove everything" - that is /force, which is deliberately not passed
+# here, so a loader the mod did not install is still left alone.
+uninstall = 'cmd /c scripts\uninstall.cmd /y'
+
+# Bump the vendored Ultimate ASI Loader. Manual, with a commit attached -
+# nothing depends on it; build, package and release consume whatever is
+# committed under vendor/.
+update-deps = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/update-deps.ps1"
+
+# Full release workflow: changelog, version stamp, package, commit, tag, push.
+release = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release.ps1"
+
+# Script tests. No Pester dependency (the Windows runner ships Pester 3.4,
+# which cannot run Pester 5 syntax), matching cameraunlock-core/powershell/tests.
+test-modproject = "powershell -NoProfile -ExecutionPolicy Bypass -File tests/ModProject.Tests.ps1"
+test-releasesupport = "powershell -NoProfile -ExecutionPolicy Bypass -File tests/ReleaseSupport.Tests.ps1"
+# The notices file states where each third-party component came from and at
+# which commit. Nothing checked those claims, and the cameraunlock-core pin had
+# already drifted several commits behind the submodule while validate-notices
+# stayed green - it checks that components are accounted for, not that the
+# accounting is true.
+test-notices = "powershell -NoProfile -ExecutionPolicy Bypass -File tests/Notices.Tests.ps1"
+test-cameramath = { cmd = "build/Release/camera_math_tests.exe", depends-on = ["build"] }
+test-config = { cmd = "build/Release/config_tests.exe", depends-on = ["build"] }
+test-hudmath = { cmd = "build/Release/hud_math_tests.exe", depends-on = ["build"] }
+test-zoomscale = { cmd = "build/Release/zoom_scale_tests.exe", depends-on = ["build"] }
+test-windowplacement = { cmd = "build/Release/window_placement_tests.exe", depends-on = ["build"] }
+test = { depends-on = ["test-modproject", "test-releasesupport", "test-notices", "test-cameramath", "test-config", "test-hudmath", "test-zoomscale", "test-windowplacement"] }
+
+# Test-Path per directory rather than -ErrorAction SilentlyContinue, which also
+# swallows a LOCKED directory - the game running with the .asi loaded, an open
+# Explorer window, an AV scan - so a partial delete reported success. Spelled
+# out per directory rather than looped: pixi's task shell expands `$d` itself
+# before PowerShell sees the line.
+clean = "powershell -NoProfile -Command \"if (Test-Path -LiteralPath build) { Remove-Item -Recurse -Force -ErrorAction Stop -LiteralPath build }; if (Test-Path -LiteralPath release) { Remove-Item -Recurse -Force -ErrorAction Stop -LiteralPath release }\""
+
+validate-notices = "node cameraunlock-core/scripts/validate-notices.mjs"
+validate-manifest = { cmd = "node cameraunlock-core/scripts/validate-manifest.mjs", depends-on = ["package"] }
+
+release-nightly = "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/release-nightly.ps1"
