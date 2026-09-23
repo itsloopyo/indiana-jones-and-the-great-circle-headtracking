@@ -74,7 +74,7 @@ $env:INDIANA_JONES_AND_THE_GREAT_CIRCLE_PATH = 'D:\XboxGames\Indiana Jones and t
 ```
 
 The folder to give it is the one holding `TheGreatCircle.exe`, which on Xbox
-Game Pass is `<drive>:\XboxGames\Indiana Jones and the Great Circle\Content`.
+Xbox Game Pass is `<drive>:\XboxGames\Indiana Jones and the Great Circle\Content`.
 
 If you also own the game on Steam, do not point the installer at that copy. It
 will happily copy the files in and the mod will then sit dormant, because the
@@ -273,7 +273,7 @@ which is the one to read after a crash.
   mod. Re-run `install.cmd`, or place both files by hand as above.
 - A log line saying the build is not recognised means the mod is dormant on this
   build and the game is running unmodified. Either it is the Steam copy, which
-  is not supported at all, or the Game Pass build has been patched since
+  is not supported at all, or the Xbox Game Pass build has been patched since
   `gdk-win64-20260527` and needs a new profile.
 
 **No tracking response**
