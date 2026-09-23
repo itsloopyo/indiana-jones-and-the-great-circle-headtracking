@@ -73,7 +73,7 @@ $env:INDIANA_JONES_AND_THE_GREAT_CIRCLE_PATH = 'D:\XboxGames\Indiana Jones and t
 .\install.cmd "D:\XboxGames\Indiana Jones and the Great Circle\Content"
 ```
 
-The folder to give it is the one holding `TheGreatCircle.exe`, which on Xbox
+The folder to give it is the one holding `TheGreatCircle.exe`, which on
 Xbox Game Pass is `<drive>:\XboxGames\Indiana Jones and the Great Circle\Content`.
 
 If you also own the game on Steam, do not point the installer at that copy. It
