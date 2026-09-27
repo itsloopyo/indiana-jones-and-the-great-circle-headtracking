@@ -1,0 +1,49 @@
+# What the config differential test compiles, and where each file came from.
+# scripts/check-differential-provenance.ps1, which pixi run test runs first, fails when a
+# listed file no longer has its hash.
+#
+# Newest published build: the rolling 'dev' pre-release, 0.0.0-nightly.20260917.d4bf69d, tag dev
+# at d4bf69d, pinned to cameraunlock-core c480d8a. No v* release was published. Its installer ZIP
+# carried no config, its launcher manifest seeds nothing, and the repo never tracked a config
+# file, so the build's first run is the only file it put on a player's disk. No commit between
+# d4bf69d and the frozen reader's changed src/config.cpp, src/config.h, src/config_sanitize.h or
+# src/hotkeys.cpp.
+#
+# Oracle: copies of 'git show d4bf69d:<path>' and of cameraunlock-core
+# 'git show c480d8a:cpp/<path>'.
+46f0599e85b93295fae9f9b44bb9485873126be16047d6c1b7558cee79f1dd96  tests/config_differential/oracle/src/config.cpp  d4bf69d:src/config.cpp
+e7c57482bd380fbfcfd2b2f24c0cde079183875b5ff4db4f724cd9f9c5cbd97e  tests/config_differential/oracle/src/config.h  d4bf69d:src/config.h
+b4f2af0c4e5425993ea1676e8e8c4a44bb079502cd5b5c28f42da77f2cd82c23  tests/config_differential/oracle/src/config_sanitize.h  d4bf69d:src/config_sanitize.h
+3e89acb116e344acb4d1696fdee2dc1b8175dfb7eb7791bc149db864ae70b28a  tests/config_differential/oracle/src/hotkeys.cpp  d4bf69d:src/hotkeys.cpp
+dbc09912f0be488a44bb8b4ec58bc3a16c1dc2aebf7b21a7e5eaddf62d434f3d  tests/config_differential/oracle/src/hotkeys.h  d4bf69d:src/hotkeys.h
+7b68ab4c2046d6d0ae9863487297bb208d0187f9d82cf0b04f8ce1aff18124c0  tests/config_differential/oracle/src/logging.h  d4bf69d:src/logging.h
+a7ffb44210ff59672fa97e8e5feaa2cb3e81938fcc0334a384c68bc371b3857a  tests/config_differential/oracle/core/include/cameraunlock/config/ini_reader.h  core c480d8a:cpp/include/cameraunlock/config/ini_reader.h
+6d3e3512bdfc9ac2a54bee750c5425191bdb4c24f3ae2ea3b9925612e01c78e5  tests/config_differential/oracle/core/include/cameraunlock/config/value_guards.h  core c480d8a:cpp/include/cameraunlock/config/value_guards.h
+91bff564d5e279b66527ec5553afcf4d591812dab0e78f71a48ef412e4db7a44  tests/config_differential/oracle/core/include/cameraunlock/protocol/port_utils.h  core c480d8a:cpp/include/cameraunlock/protocol/port_utils.h
+b24dceb8e25475aebc5a468a5c7362a4a4e64204d183d1408525345f32f547f5  tests/config_differential/oracle/core/include/cameraunlock/data/position_settings.h  core c480d8a:cpp/include/cameraunlock/data/position_settings.h
+fc2146f8c585e5f610c7234e302f59de4945679cfa28ff479ca47477ec073f22  tests/config_differential/oracle/core/include/cameraunlock/math/smoothing_utils.h  core c480d8a:cpp/include/cameraunlock/math/smoothing_utils.h
+d7a905270933e3cb0c4c361d29d3fd701655498cbcd1875ea79d180468bdbe6a  tests/config_differential/oracle/core/include/cameraunlock/math/angle_utils.h  core c480d8a:cpp/include/cameraunlock/math/angle_utils.h
+c59772d698d54ade3374ee1221b74f5563a86d76f0eb34a989ef7efab389c0ad  tests/config_differential/oracle/core/include/cameraunlock/math/finite_utils.h  core c480d8a:cpp/include/cameraunlock/math/finite_utils.h
+43bdd2ef8554c78e5f440333463750c13b95110fe672b0b6e273244df9e7d169  tests/config_differential/oracle/core/include/cameraunlock/logging/file_log.h  core c480d8a:cpp/include/cameraunlock/logging/file_log.h
+de519d9b49c949353c550b9dda347380cbbf131f6768378f8a9f5fd97678fea8  tests/config_differential/oracle/core/include/cameraunlock/input/chord_hotkeys.h  core c480d8a:cpp/include/cameraunlock/input/chord_hotkeys.h
+e01515c2656aaf533bae4350dc45b702c3e3d4043935743dcc9bd5ea581fbe1c  tests/config_differential/oracle/core/src/config/ini_reader.cpp  core c480d8a:cpp/src/config/ini_reader.cpp
+a833ff7f2721f7974ce039a3597349a0974e6695ce3e75e598ce5bf4985a14b1  tests/config_differential/oracle/core/src/config/value_guards.cpp  core c480d8a:cpp/src/config/value_guards.cpp
+73c53c2baa06bbfebe8211f62678aa2b60cb95f604743d3686951ba56b87ea47  tests/config_differential/oracle/core/src/logging/file_log.cpp  core c480d8a:cpp/src/logging/file_log.cpp
+#
+# The first-run output of the dev build, extracted once with --first-run from the oracle's
+# kDefaultIniText. The test checks the oracle still writes exactly these bytes.
+09dc4940b46df0edde896747b4e24c2711df0afeda6a5f733f3596a6f7c7ee51  tests/config_differential/data/dev-first-run.ini  dev first run
+#
+# The frozen import. Never edited once the conversion landed.
+c3624e8c393ca29306f66d9ac6b40e657fe3ec6765ab9ad1ce8ec506f5296026  src/legacy_config/legacy_config.h  frozen import
+cfba8ea0f6fc397bf50f3abfa683c5a7d68149ecf9d65441ad936d348cf521b3  src/legacy_config/legacy_config.cpp  frozen import
+4408e9e6c026412ed83e7f89617fef36fbbe006291fd8b040e5c321e7eed704f  src/legacy_config/config_sanitize.h  frozen import
+#
+# The core sources the import compiles to read a file. IniReader and the value guards are frozen
+# in core, and each equals c480d8a's, so the import reads a file with the helpers the published
+# build had. NormalizeUdpPort, from a part of core that is not frozen, is copied into the import.
+a7ffb44210ff59672fa97e8e5feaa2cb3e81938fcc0334a384c68bc371b3857a  cameraunlock-core/cpp/include/cameraunlock/config/ini_reader.h  core c480d8a:cpp/include/cameraunlock/config/ini_reader.h
+e01515c2656aaf533bae4350dc45b702c3e3d4043935743dcc9bd5ea581fbe1c  cameraunlock-core/cpp/src/config/ini_reader.cpp  core c480d8a:cpp/src/config/ini_reader.cpp
+6d3e3512bdfc9ac2a54bee750c5425191bdb4c24f3ae2ea3b9925612e01c78e5  cameraunlock-core/cpp/include/cameraunlock/config/value_guards.h  core c480d8a:cpp/include/cameraunlock/config/value_guards.h
+a833ff7f2721f7974ce039a3597349a0974e6695ce3e75e598ce5bf4985a14b1  cameraunlock-core/cpp/src/config/value_guards.cpp  core c480d8a:cpp/src/config/value_guards.cpp
+c59772d698d54ade3374ee1221b74f5563a86d76f0eb34a989ef7efab389c0ad  cameraunlock-core/cpp/include/cameraunlock/math/finite_utils.h  core c480d8a:cpp/include/cameraunlock/math/finite_utils.h

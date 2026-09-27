@@ -84,9 +84,10 @@ struct Config {
     float limit_z_back = cameraunlock::PositionSettings{}.limit_z_back;
 };
 
-// Reads HeadTracking.ini from `exe_dir` through the frozen reader in
-// src/legacy_config and sets every member of `out` from it. A key that is
-// absent, or whose value the reader refuses, gives the shipped default.
+// Reads HeadTracking.ini from `exe_dir` over `out`. Keys that are absent, or
+// whose value the boundary checks in config_sanitize.h reject, leave the
+// corresponding member of `out` at whatever it already held - so passing a
+// default-constructed Config yields the shipped defaults.
 void LoadConfig(const std::string& exe_dir, Config& out);
 
 // Writes the documented default HeadTracking.ini into `exe_dir`, unless one is

@@ -48,9 +48,10 @@ jobs:
         shell: pwsh
         run: pixi run package
 
-      # The seven suites the pixi `test` task aggregates. Nothing automated ran
-      # any of them before this step existed: `pixi run package` COMPILES the
-      # test executables, so a build break was caught, but not one assertion was
+      # The suites the pixi `test` task aggregates. `pixi run package` depends on
+      # `test` and so has already run them; this step names them in the log.
+      # Before either existed, `pixi run package` only COMPILED the test
+      # executables, so a build break was caught, but not one assertion was
       # ever evaluated. A sign flip in the camera composition, the reticle
       # projection or the zoom conversion - the three that have no in-game
       # symptom until a player reports the view going the wrong way - merged
