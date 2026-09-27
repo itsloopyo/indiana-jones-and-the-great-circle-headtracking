@@ -71,9 +71,7 @@ private:
     ZoomScale ReadZoomScale(std::uintptr_t view);
 
     // Whether world-anchored interface elements and the reticle are corrected
-    // for the tracked view. Follows the config key of the same name, and is
-    // cleared if the interface hooks fail to install - so it means "running",
-    // not "asked for".
+    // for the tracked view: set once the interface hooks have installed.
     bool m_compensateWorldMarkers = false;
 
     // Which sanity guard refused, and so which latch the report uses.

@@ -54,7 +54,6 @@ public:
     void ToggleYawMode();
     void CycleTrackingMode();
 
-    const Config& GetConfig() const { return m_config; }
 
 private:
     void LoadSettings();
@@ -62,9 +61,6 @@ private:
     void LogVerdictChange(GateReason reason);
 
     Config m_config;
-    // Where HeadTracking.ini lives. Empty when the game directory could not be
-    // resolved.
-    std::string m_exeDir;
     std::atomic<bool> m_enabled{true};
     std::atomic<bool> m_worldSpaceYaw{true};
 

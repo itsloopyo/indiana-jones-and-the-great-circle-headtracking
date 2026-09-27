@@ -45,7 +45,6 @@ constexpr unsigned kSteadyIntervalFrames = 2000;
 bool CameraHook::Install(const builds::BuildProfile& profile, HeadTrackingMod& mod) {
     m_profile = &profile;
     m_mod = &mod;
-    m_compensateWorldMarkers = mod.GetConfig().compensate_world_markers;
 
     auto& hooks = cameraunlock::hooks::HookManager::Instance();
     const auto initStatus = hooks.Initialize();
@@ -86,7 +85,7 @@ bool CameraHook::Install(const builds::BuildProfile& profile, HeadTrackingMod& m
     // unmodified, and four interface detours installed ahead of them would make
     // that line untrue: the mod would have left its own code in the engine's
     // marker and reticle paths on a build it then declined to touch.
-    if (m_compensateWorldMarkers) m_compensateWorldMarkers = m_uiWorldView.Start(profile);
+    m_compensateWorldMarkers = m_uiWorldView.Start(profile);
     return true;
 }
 

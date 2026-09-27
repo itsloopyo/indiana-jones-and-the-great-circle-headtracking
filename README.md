@@ -89,7 +89,7 @@ Both files go beside `TheGreatCircle.exe`, in the folder named above:
    picks the system library it forwards to from its own filename, so the rename
    is all that is needed.
 2. Copy `GreatCircleHeadTracking.asi` into the same folder.
-3. Launch the game. The mod writes `HeadTracking.ini` next to the executable on
+3. Launch the game. The mod writes `CameraUnlock.ini` next to the executable on
    first run, and logs to `HeadTracking.log` beside it.
 
 Mod managers do not deploy this mod, and there is no Nexus download. Both files
@@ -168,82 +168,29 @@ Two equivalent binding sets - use whichever your keyboard has:
 `Page Down` / `Ctrl+Shift+H` switches head yaw between world-locked and
 camera-local.
 
-All six keys are remappable in `HeadTracking.ini`.
+Each action's keys are a list under `[Hotkeys]` in `CameraUnlock.ini`, chords
+included, and every key in it can be rebound.
 
 ## Configuration
 
-`HeadTracking.ini` is written next to `TheGreatCircle.exe` on first launch and
-documents every key it accepts:
+The mod reads its settings from `CameraUnlock.ini` next to `TheGreatCircle.exe`,
+and creates the file when it starts and finds none. A setting set to `default`
+takes its value from `Defaults.ini` (`%AppData%\CameraUnlock\Defaults.ini` on
+Windows), which the mod creates with the built-in values when there is none and
+never changes. Writing a value in place of `default` changes that setting for
+this game only.
 
-```ini
-; Indiana Jones and the Great Circle Head Tracking - configuration
-; Edit values, restart the game to apply.
-;
-; Controls (all remappable, see [Hotkeys]):
-;           End  / Ctrl+Shift+Y   toggle tracking
-;           PgUp / Ctrl+Shift+G   cycle tracking mode (rotation and position
-;                                 / rotation only / position only)
-;           PgDn / Ctrl+Shift+H   yaw about world up / about the view axis
-;
-; There is no recenter key. Centre your head in your tracker (OpenTrack's
-; Center bind, or your phone app's CENTER button) - this mod uses the pose it
-; is sent, exactly as sent, so one centre anywhere is the whole story.
-;
-; Field of view is a game setting, not a mod setting. The game has its own
-; Field of View slider under Options > Video. This mod rotates and moves
-; the camera and never writes its field of view.
+Settings are read when the game starts. The tracking mode and yaw mode hotkeys
+save the mode they switch to in `CameraUnlock.ini`, so it comes back the next
+time you play. The tracking toggle (`End`) changes the current session only;
+whether tracking starts on is `EnableOnStartup`.
 
-[Network]
-; The port your tracker sends OpenTrack UDP packets to.
-UdpPort=4242
+The tracker owns the shape of the pose, so set sensitivity, deadzone and axis
+inversion in OpenTrack or your phone app once and every game behaves the same
+way.
 
-[General]
-EnableOnStartup=1
-; 1 = head yaw turns about world up, so a glance left stays level while you
-; are looking up or down a stairwell. 0 = yaw turns about the view axis.
-WorldSpaceYaw=1
-; Keep world markers aligned with the tracked view and rotate the reticle
-; with the game aim direction. Reticle lean parallax is not corrected.
-CompensateWorldMarkers=1
-
-[Hotkeys]
-; Windows virtual key codes, in hex. Each action has a nav-cluster key and a
-; Ctrl+Shift+<key> chord, and both fire it - remap either or both.
-; Common codes: End 0x23, Insert 0x2D, Delete 0x2E, PgUp 0x21, PgDn 0x22,
-; F1-F12 0x70-0x7B, A-Z 0x41-0x5A, numpad 0-9 0x60-0x69.
-ToggleKey=0x23
-CycleModeKey=0x21
-YawModeKey=0x22
-ChordToggleKey=0x59
-ChordCycleModeKey=0x47
-ChordYawModeKey=0x48
-
-; Head movement is used exactly as your tracker sends it. There is no
-; sensitivity, deadzone or axis inversion here on purpose: set those in
-; OpenTrack or your phone app once, and every game behaves the same way.
-
-[Rotation]
-; Smoothing covers rotation and position alike, and the value used is picked
-; per connection from where the tracker sends from. 0.0 none .. 1.0 heavy.
-; LOCAL means the packets arrive from 127.0.0.1. A tracker running on this
-; same PC that sends to this PC's LAN address counts as REMOTE - the mod sees
-; a transport, not a machine.
-LocalSmoothing=0.0
-RemoteSmoothing=0.15
-
-[Position]
-; Whether positional lean is on when the game starts. The PgUp / Ctrl+Shift+G
-; cycle changes it afterwards, so this chooses the launch mode rather than
-; locking it.
-Enabled=1
-; How far the view may lean from where the game put it, in metres.
-; 0 to 0.50 on each axis. A value past either end is pulled back to it and the
-; log says so; 0 is a real setting and pins that axis.
-LimitX=0.30
-LimitY=0.20
-LimitZ=0.40
-LimitZBack=0.10
-```
+World markers and the weapon reticle always follow the head-tracked view.
+There is no setting to turn that off.
 
 Field of view stays a game setting, under **Options -> Video -> Field of View**.
 The mod reads it every frame and scales head yaw, pitch and lean by how far the
@@ -291,7 +238,7 @@ which is the one to read after a crash.
 **Jittery / unstable tracking**
 
 - A phone, or any other sender on the network, gets `RemoteSmoothing` (0.15 by
-  default). Raise it toward 1.0 in `HeadTracking.ini` for a noisy link.
+  default). Raise it toward 1.0 in `CameraUnlock.ini` for a noisy link.
 - Clean the feed at the source: better lighting for a webcam, and OpenTrack's
   own filter stage for a raw phone feed.
 - A tracker on this PC that sends to this PC's LAN address counts as remote.
@@ -327,9 +274,10 @@ Download the new release and run `install.cmd` again. Your config is preserved.
 ## Uninstalling
 
 Run `uninstall.cmd`. This removes `GreatCircleHeadTracking.asi`,
-`HeadTracking.ini`, `HeadTracking.log` and `HeadTracking.prev.log`, so keep a
-copy of the ini first if you have tuned it. The mod loader is only removed if the
-installer put it there. Use `uninstall.cmd /force` to remove it anyway.
+`HeadTracking.log` and `HeadTracking.prev.log`, and leaves `CameraUnlock.ini`
+and any `HeadTracking.ini` from an earlier version in place. The mod loader is
+only removed if the installer put it there. Use `uninstall.cmd /force` to remove
+it anyway.
 
 ## Building from Source
 
