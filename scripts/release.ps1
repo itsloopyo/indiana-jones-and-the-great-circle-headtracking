@@ -91,48 +91,15 @@ try {
         'vendor/'
         'launcher-manifest.json'
     )
-    # An "## [Unreleased]" section with anything under it has to be dealt with
-    # before the release, not after. New-ChangelogFromCommits inserts the new
-    # "## [X.Y.Z]" entry directly under "# Changelog", which is ABOVE that
-    # heading, and nothing in the release path ever clears it - so the section
-    # survives, and package-release.ps1 stages CHANGELOG.md into the installer
-    # ZIP. Every player extracting the release would get a permanent "Unreleased"
-    # list of the features that had just shipped, sitting under the entry saying
-    # they shipped.
-    #
-    # Refused rather than silently dropped: those bullets are hand-written and
-    # usually say it better than the generated commit subjects do, so the right
-    # move is to fold them in, which only the person writing the release can do.
-    $changelogPath = Join-Path $project.Root 'CHANGELOG.md'
-    $unreleased = [regex]::Match(
-        [System.IO.File]::ReadAllText($changelogPath),
-        '(?ms)^##\s*\[Unreleased\][^
-]*?
-(.*?)(?=^##\s|\z)')
-    if ($unreleased.Success -and $unreleased.Groups[1].Value.Trim()) {
-        Write-Host "Error: CHANGELOG.md still has an [Unreleased] section with content." -ForegroundColor Red
-        Write-Host "The release entry is inserted above it and nothing clears it, so that text would ship" -ForegroundColor Yellow
-        Write-Host "inside the installer ZIP describing the release as unreleased. Fold those bullets into" -ForegroundColor Yellow
-        Write-Host "the release (or delete them), then re-run." -ForegroundColor Yellow
-        exit 1
-    }
-
     try {
         New-ChangelogFromCommits -ChangelogPath 'CHANGELOG.md' -Version $new `
-            -ArtifactPaths $shippingPaths | Out-Null
+            -ArtifactPaths $shippingPaths -Maintenance:$Force | Out-Null
     } catch {
+        Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
         if (-not $Force) {
-            Write-Host "Error: $($_.Exception.Message)" -ForegroundColor Red
             Write-Host "No user-facing changes to release. Re-run with -Force for a maintenance release." -ForegroundColor Yellow
-            exit 1
         }
-        # Printed even under -Force: this catch sees every failure of
-        # New-ChangelogFromCommits, not only "all commits filtered as noise". A
-        # missing CHANGELOG.md or a git failure would otherwise be relabelled
-        # "no user-facing changes" and released.
-        Write-Host "Changelog generation failed: $($_.Exception.Message)" -ForegroundColor Yellow
-        Write-Host "Writing maintenance entry (-Force)." -ForegroundColor Yellow
-        Add-MaintenanceChangelogEntry -Path (Join-Path $project.Root 'CHANGELOG.md') -NewVersion $new
+        exit 1
     }
 
     # From here to the manifest check below, every step writes to the tree, and

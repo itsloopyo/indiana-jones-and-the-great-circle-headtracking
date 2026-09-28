@@ -4,7 +4,7 @@
 <#
 .SYNOPSIS
     File-editing mechanics for release.ps1: encoding-safe writes, version
-    stamping, and the maintenance changelog entry.
+    stamping, and copying and zipping by literal path.
 
 .DESCRIPTION
     Separated from release.ps1 so that script is only the release policy -
@@ -51,46 +51,6 @@ function Update-VersionInFile {
     $updated = $text -replace $Pattern, $Replacement
     if ($updated -eq $text) { throw "Version stamp did not match anything in $Path" }
     Set-TextFileNoBom -Path $Path -Text $updated
-}
-
-<#
-.SYNOPSIS
-    Inserts a "no user-facing changes" entry at the top of the changelog.
-.DESCRIPTION
-    Mirrors New-ChangelogFromCommits' insertion so a -Force maintenance entry
-    lands in the same place with the same shape: straight after the "# Changelog"
-    heading and the blank line that follows it.
-
-    The anchor is pinned to the start of the file. A pattern free to match
-    further down settles on the first blank line anywhere, which in a changelog
-    whose heading is not followed by one is the blank line inside the newest
-    entry - and the maintenance entry then lands between that entry's heading
-    and its body.
-.PARAMETER Path
-    Full path to CHANGELOG.md. Read and written through the same path.
-#>
-function Add-MaintenanceChangelogEntry {
-    [CmdletBinding()]
-    param(
-        [Parameter(Mandatory = $true)][string]$Path,
-        [Parameter(Mandatory = $true)][string]$NewVersion
-    )
-    $date = Get-Date -Format 'yyyy-MM-dd'
-    $entry = "## [$NewVersion] - $date`n`n### Changed`n`n- Maintenance release (no user-facing changes).`n`n"
-
-    # ReadAllText, not Get-Content -Raw: 5.1 reads a BOM-less file as ANSI,
-    # which mojibakes any non-ASCII already in the changelog on the way through
-    # this rewrite.
-    $changelog = [System.IO.File]::ReadAllText($Path)
-    $heading = [regex]::Match($changelog, '\A# Changelog\r?\n(?:\r?\n)?')
-    if (-not $heading.Success) {
-        throw "$Path does not start with a '# Changelog' heading; refusing to guess where the entry goes."
-    }
-
-    # Concatenated rather than -replace: the entry is literal text, and a
-    # replacement string would re-expand any $ inside it.
-    $updated = $heading.Value + $entry + $changelog.Substring($heading.Length)
-    Set-TextFileNoBom -Path $Path -Text ($updated.TrimEnd() + "`n")
 }
 
 <#
@@ -170,7 +130,6 @@ function New-ZipFromDirectory {
 Export-ModuleMember -Function @(
     'Set-TextFileNoBom',
     'Update-VersionInFile',
-    'Add-MaintenanceChangelogEntry',
     'Copy-FileLiteral',
     'New-ZipFromDirectory'
 )
