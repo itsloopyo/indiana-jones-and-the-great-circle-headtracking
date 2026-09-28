@@ -69,6 +69,12 @@ try {
     if (-not (Test-CleanGitStatus)) { throw "Working tree is dirty - commit or stash first." }
     if (Test-GitTagExists -Tag "v$new") { throw "Tag v$new already exists." }
 
+    Write-Host "Running the full test suite..." -ForegroundColor Cyan
+    pixi run test
+    if ($LASTEXITCODE -ne 0) {
+        Write-Host "Error: pixi run test failed. Nothing was changed." -ForegroundColor Red
+        exit 1
+    }
 
     # Generate CHANGELOG from commits since the last tag. This is the gate that
     # aborts when there are no user-facing commits, so run it BEFORE stamping
@@ -167,15 +173,6 @@ try {
         foreach ($stamp in $stamps) {
             Update-VersionInFile -Path (Join-Path $project.Root $stamp.Path) -Pattern $stamp.Pattern -Replacement $stamp.Replacement
         }
-
-        # The seven suites, HERE and not only in build.yml. build.yml skips any
-        # commit whose message starts "Release v", which is exactly what this
-        # script commits, and the reusable release workflow runs `pixi run
-        # package` and nothing else - so without this the one commit that ships
-        # is the one commit nothing tests. Before the package, so a failure costs
-        # nothing to undo.
-        & pixi run test
-        if ($LASTEXITCODE -ne 0) { throw 'Tests failed' }
 
         # Build and package through the same pixi chain CI runs (setup -> build
         # -> package), not a bare `cmake --build`, which fails outright on a
