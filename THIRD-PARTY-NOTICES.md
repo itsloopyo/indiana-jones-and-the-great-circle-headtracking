@@ -256,7 +256,7 @@ THE SOFTWARE.
 
 ## cameraunlock-core
 
-- **Version:** submodule at `de8d03a06f8184253b61f0836a5e3ce9d9003934`
+- **Version:** submodule at `e64a81ff0f7bde7ddb3102382a061b4c91f01254`
 - **License:** MIT, Copyright (c) 2026 itsloopyo
 - **Upstream:** https://github.com/itsloopyo/cameraunlock-core
 - **Usage:** shared head tracking pipeline (UDP receiver, interpolation,
