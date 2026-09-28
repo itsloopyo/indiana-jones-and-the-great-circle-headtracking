@@ -141,14 +141,16 @@ try {
     Add-Type -AssemblyName System.IO.Compression.FileSystem
     $archive = [System.IO.Compression.ZipFile]::OpenRead($goodZip)
     try {
-        $entries = @($archive.Entries | ForEach-Object { $_.FullName })
+        $entries = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\', '/') })
     } finally { $archive.Dispose() }
 
     # Entry names are the packager's contract - install.cmd reads plugins\ and
-    # the ZIP root - so the wrapper has to reproduce what the wildcard form
-    # produced, separators included.
+    # the ZIP root. The separator is not: Windows PowerShell's own
+    # Microsoft.PowerShell.Archive writes a backslash, while a powershell.exe
+    # started from pwsh (GitHub Actions' shell: pwsh) loads pwsh's copy of the
+    # module, which writes a forward slash.
     Check 'New-ZipFromDirectory roots entries at the staging directory' `
-        (($entries -contains 'plugins\Mod.asi') -and ($entries -contains 'install.cmd')) `
+        (($entries -contains 'plugins/Mod.asi') -and ($entries -contains 'install.cmd')) `
         "entries: $($entries -join ', ')"
 
     $emptyStage = Join-Path $sandbox 'empty-stage'
